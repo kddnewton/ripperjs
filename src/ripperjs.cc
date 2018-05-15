@@ -1,14 +1,6 @@
 #include <node.h>
 #include <ruby.h>
 
-const char * rb_cRipperSexp(const char *code) {
-  VALUE rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
-  VALUE result = rb_funcall(rb_cRipper, rb_intern("sexp"), 1, rb_str_new2(code));
-
-  VALUE inspected = rb_sprintf("%" PRIsVALUE, result);
-  return StringValueCStr(inspected);
-}
-
 namespace ripperjs {
   using v8::Exception;
   using v8::FunctionCallbackInfo;
@@ -17,6 +9,14 @@ namespace ripperjs {
   using v8::Object;
   using v8::String;
   using v8::Value;
+
+  const char * rb_cRipperSexp(const char *code) {
+    VALUE rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
+    VALUE result = rb_funcall(rb_cRipper, rb_intern("sexp"), 1, rb_str_new2(code));
+
+    VALUE inspected = rb_sprintf("%" PRIsVALUE, result);
+    return StringValueCStr(inspected);
+  }
 
   void Sexp(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();

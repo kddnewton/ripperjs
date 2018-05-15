@@ -7,10 +7,12 @@
         "<!(ruby -e \"puts RbConfig::CONFIG['rubyhdrdir']\")",
         "<!(ruby -e \"puts RbConfig::CONFIG['rubyarchhdrdir']\")"
       ],
-      "libraries": [
-        "<!(ruby -e \"puts RbConfig::CONFIG.values_at('libdir', 'LIBRUBY').join('/')\")",
-        "<!(ruby -e \"puts RbConfig::CONFIG['LIBS']\")"
-      ]
+      "link_settings": {
+        "libraries": [
+          "<!(ruby -e \"puts RbConfig::CONFIG.values_at('libdir', 'LIBRUBY').join('/')\")",
+          "<!(ruby -e \"puts RbConfig::CONFIG['LIBS']\")"
+        ]
+      }
     }
   ]
 }
