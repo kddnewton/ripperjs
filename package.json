@@ -1,0 +1,22 @@
+{
+  "name": "ripperjs",
+  "version": "0.0.1",
+  "description": "A wrapper for the ripper Ruby library",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kddeisz/ripperjs.git"
+  },
+  "author": "Kevin Deisz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kddeisz/ripperjs/issues"
+  },
+  "homepage": "https://github.com/kddeisz/ripperjs#readme",
+  "devDependencies": {
+    "node-gyp": "^3.6.2"
+  }
+}
