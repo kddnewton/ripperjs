@@ -6,9 +6,10 @@ A wrapper for the ripper Ruby library.
 
 Ensure you have the following prerequisites installed:
 
-* gcc
-* ruby
-* yarn
+* `gcc`
+* `ruby-devel`
+* `node`
+* `yarn`
 
 Run `yarn` in the root of the repository to get the JavaScript dependencies. Then run `yarn build` to build the necessary library.
 
