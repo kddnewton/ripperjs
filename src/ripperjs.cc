@@ -11,6 +11,10 @@ namespace ripperjs {
   using v8::Value;
 
   const char * rb_cRipperSexp(const char *code) {
+    ruby_init();
+    ruby_init_loadpath();
+    rb_require("ripper");
+
     VALUE rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
     VALUE result = rb_funcall(rb_cRipper, rb_intern("sexp"), 1, rb_str_new2(code));
 
