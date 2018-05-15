@@ -12,4 +12,8 @@ Ensure you have the following prerequisites installed:
 
 Run `yarn` in the root of the repository to get the JavaScript dependencies. Then run `yarn build` to build the necessary library.
 
+You can now run `bin/ripper "..."` to parse ruby code into s-expressions, where the `...` is valid ruby code.
+
+## Tests
+
 Run `yarn test` to run the tests.

@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+const { sexp } = require("../src");
+const parsed = JSON.stringify(sexp(process.argv[2]), null, 2);
+
+console.log(parsed);

@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "node-gyp rebuild",
+    "clean": "node-gyp clean",
     "test": "jest"
   },
   "repository": {
