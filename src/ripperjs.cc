@@ -2,9 +2,11 @@
 #include <ruby.h>
 
 namespace ripperjs {
-  v8::Local<v8::Array> arrayToV8(v8::Isolate *isolate, VALUE sexps) {
+  using v8::Local;
+
+  Local<v8::Array> arrayToV8(v8::Isolate *isolate, VALUE sexps) {
     const long sexpsLen = RARRAY_LEN(sexps);
-    v8::Local<v8::Array> result = v8::Array::New(isolate, sexpsLen);
+    Local<v8::Array> result = v8::Array::New(isolate, sexpsLen);
 
     VALUE sexp;
     const char *cstr;
@@ -39,7 +41,7 @@ namespace ripperjs {
     return result;
   }
 
-  v8::Local<v8::Array> codeToV8(v8::Isolate *isolate, const char *code) {
+  Local<v8::Array> codeToV8(v8::Isolate *isolate, const char *code) {
     ruby_init();
     ruby_init_loadpath();
     rb_require("ripper");
@@ -55,7 +57,7 @@ namespace ripperjs {
     v8::Isolate* isolate = args.GetIsolate();
 
     if (args.Length() != 1) {
-      v8::Local<v8::String> error = v8::String::NewFromUtf8(
+      Local<v8::String> error = v8::String::NewFromUtf8(
         isolate, "Wrong number of arguments"
       );
       isolate->ThrowException(v8::Exception::TypeError(error));
@@ -63,7 +65,7 @@ namespace ripperjs {
     }
 
     if (!args[0]->IsString()) {
-      v8::Local<v8::String> error = v8::String::NewFromUtf8(
+      Local<v8::String> error = v8::String::NewFromUtf8(
         isolate, "Code must be a string"
       );
       isolate->ThrowException(v8::Exception::TypeError(error));
@@ -74,7 +76,7 @@ namespace ripperjs {
     args.GetReturnValue().Set(codeToV8(isolate, *code));
   }
 
-  void init(v8::Local<v8::Object> exports) {
+  void init(Local<v8::Object> exports) {
     NODE_SET_METHOD(exports, "sexp", Sexp);
   }
 
