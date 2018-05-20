@@ -7,35 +7,31 @@ namespace ripperjs {
     v8::Local<v8::Array> result = v8::Array::New(isolate, sexpsLen);
 
     VALUE sexp;
-    VALUE rbstr;
     const char *cstr;
 
     for (long idx = 0; idx < sexpsLen; idx++) {
       sexp = rb_ary_entry(sexps, idx);
 
       switch (TYPE(sexp)) {
-        case T_ARRAY:
-          result->Set(idx, arrayToV8(isolate, sexp));
-          break;
-        case T_NIL:
-          result->Set(idx, v8::Null(isolate));
+        case T_SYMBOL:
+          cstr = rb_id2name(SYM2ID(sexp));
+          result->Set(idx, v8::String::NewFromUtf8(isolate, cstr));
           break;
         case T_FALSE:
           result->Set(idx, v8::False(isolate));
+          break;
+        case T_NIL:
+          result->Set(idx, v8::Null(isolate));
           break;
         case T_FIXNUM:
           result->Set(idx, v8::Integer::New(isolate, FIX2LONG(sexp)));
           break;
         case T_STRING:
           cstr = StringValueCStr(sexp);
-
           result->Set(idx, v8::String::NewFromUtf8(isolate, cstr));
           break;
-        case T_SYMBOL:
-          rbstr = rb_sprintf(":%" PRIsVALUE, sexp);
-          cstr = StringValueCStr(rbstr);
-
-          result->Set(idx, v8::String::NewFromUtf8(isolate, cstr));
+        case T_ARRAY:
+          result->Set(idx, arrayToV8(isolate, sexp));
           break;
       }
     }
