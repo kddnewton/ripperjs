@@ -32,14 +32,20 @@ namespace ripperjs {
     return node;
   }
 
-  Local<Object> arrayToLiteral(Isolate *isolate, VALUE array) {
-    Local<Object> literal = Object::New(isolate);
-    VALUE location = rb_ary_entry(array, 2);
+  Local<Object> arrayToObject(Isolate *isolate, VALUE array) {
+    Local<Object> base = Object::New(isolate);
 
-    literal->Set(
+    base->Set(
       String::NewFromUtf8(isolate, "type"),
       String::NewFromUtf8(isolate, rb_id2name(SYM2ID(rb_ary_entry(array, 0))))
     );
+
+    return base;
+  }
+
+  Local<Object> arrayToLiteral(Isolate *isolate, VALUE array) {
+    Local<Object> literal = arrayToObject(isolate, array);
+    VALUE location = rb_ary_entry(array, 2);
 
     literal->Set(
       String::NewFromUtf8(isolate, "body"),
@@ -60,12 +66,7 @@ namespace ripperjs {
   }
 
   Local<Object> arrayToNode(Isolate *isolate, VALUE array) {
-    Local<Object> node = Object::New(isolate);
-
-    node->Set(
-      String::NewFromUtf8(isolate, "type"),
-      String::NewFromUtf8(isolate, rb_id2name(SYM2ID(rb_ary_entry(array, 0))))
-    );
+    Local<Object> node = arrayToObject(isolate, array);
 
     node->Set(
       String::NewFromUtf8(isolate, "body"),
