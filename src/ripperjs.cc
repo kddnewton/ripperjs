@@ -11,6 +11,9 @@ namespace ripperjs {
   using v8::String;
   using v8::Value;
 
+  VALUE rb_cRipper;
+  ID rb_sexp;
+
   Local<Value> objectToTree(Isolate *isolate, VALUE object);
 
   Local<Object> arrayToLiteral(Isolate *isolate, VALUE array) {
@@ -104,18 +107,6 @@ namespace ripperjs {
     }
   }
 
-  Local<Value> codeToV8(Isolate *isolate, const char *code) {
-    ruby_init();
-    ruby_init_loadpath();
-    rb_require("ripper");
-
-    VALUE rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
-    VALUE array = rb_funcall(
-      rb_cRipper, rb_intern("sexp"), 1, rb_str_new2(code)
-    );
-    return objectToTree(isolate, array);
-  }
-
   void Sexp(const v8::FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
@@ -136,10 +127,19 @@ namespace ripperjs {
     }
 
     String::Utf8Value code(isolate, args[0]->ToString());
-    args.GetReturnValue().Set(codeToV8(isolate, *code));
+    VALUE array = rb_funcall(rb_cRipper, rb_sexp, 1, rb_str_new2(*code));
+
+    args.GetReturnValue().Set(objectToTree(isolate, array));
   }
 
   void init(Local<Object> exports) {
+    ruby_init();
+    ruby_init_loadpath();
+
+    rb_require("ripper");
+    rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
+    rb_sexp = rb_intern("sexp");
+
     NODE_SET_METHOD(exports, "sexp", Sexp);
   }
 
