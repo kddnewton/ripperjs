@@ -6,7 +6,11 @@ namespace ripperjs {
   using v8::Local;
 
   using v8::Array;
+  using v8::Exception;
+  using v8::False;
+  using v8::FunctionCallbackInfo;
   using v8::Integer;
+  using v8::Null;
   using v8::Object;
   using v8::String;
   using v8::Value;
@@ -15,6 +19,18 @@ namespace ripperjs {
   ID rb_sexp;
 
   Local<Value> objectToTree(Isolate *isolate, VALUE object);
+
+  Local<Array> arrayToArray(Isolate *isolate, VALUE array, long offset = 0) {
+    long size = RARRAY_LEN(array);
+    Local<Array> node = Array::New(isolate, size - offset);
+
+    long idx;
+    for (idx = offset; idx < size; idx++) {
+      node->Set(idx - offset, objectToTree(isolate, rb_ary_entry(array, idx)));
+    }
+
+    return node;
+  }
 
   Local<Object> arrayToLiteral(Isolate *isolate, VALUE array) {
     Local<Object> literal = Object::New(isolate);
@@ -51,27 +67,10 @@ namespace ripperjs {
       String::NewFromUtf8(isolate, rb_id2name(SYM2ID(rb_ary_entry(array, 0))))
     );
 
-    long nodeBodySize = RARRAY_LEN(array) - 1;
-    Local<Array> nodeBody = Array::New(isolate, nodeBodySize);
-
-    long idx;
-    for (idx = 1; idx <= nodeBodySize; idx++) {
-      nodeBody->Set(idx - 1, objectToTree(isolate, rb_ary_entry(array, idx)));
-    }
-
-    node->Set(String::NewFromUtf8(isolate, "body"), nodeBody);
-
-    return node;
-  }
-
-  Local<Array> arrayToArray(Isolate *isolate, VALUE array) {
-    long size = RARRAY_LEN(array);
-    Local<Array> node = Array::New(isolate, size);
-
-    long idx;
-    for (idx = 0; idx < size; idx++) {
-      node->Set(idx, objectToTree(isolate, rb_ary_entry(array, idx)));
-    }
+    node->Set(
+      String::NewFromUtf8(isolate, "body"),
+      arrayToArray(isolate, array, 1)
+    );
 
     return node;
   }
@@ -81,9 +80,9 @@ namespace ripperjs {
       case T_SYMBOL:
         return String::NewFromUtf8(isolate, rb_id2name(SYM2ID(object)));
       case T_FALSE:
-        return v8::False(isolate);
+        return False(isolate);
       case T_NIL:
-        return v8::Null(isolate);
+        return Null(isolate);
       case T_FIXNUM:
         return Integer::New(isolate, FIX2LONG(object));
       case T_STRING:
@@ -107,14 +106,14 @@ namespace ripperjs {
     }
   }
 
-  void Sexp(const v8::FunctionCallbackInfo<Value>& args) {
+  void Sexp(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
     if (args.Length() != 1) {
       Local<String> error = String::NewFromUtf8(
         isolate, "Wrong number of arguments"
       );
-      isolate->ThrowException(v8::Exception::TypeError(error));
+      isolate->ThrowException(Exception::TypeError(error));
       return;
     }
 
@@ -122,7 +121,7 @@ namespace ripperjs {
       Local<String> error = String::NewFromUtf8(
         isolate, "Code must be a string"
       );
-      isolate->ThrowException(v8::Exception::TypeError(error));
+      isolate->ThrowException(Exception::TypeError(error));
       return;
     }
 
