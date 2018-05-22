@@ -16,7 +16,7 @@ namespace ripperjs {
   using v8::Value;
 
   VALUE rb_cRipper;
-  ID rb_sexp;
+  ID rb_sexp_raw;
 
   Local<Value> objectToTree(Isolate *isolate, VALUE object);
 
@@ -127,7 +127,15 @@ namespace ripperjs {
     }
 
     String::Utf8Value code(isolate, args[0]->ToString());
-    VALUE array = rb_funcall(rb_cRipper, rb_sexp, 1, rb_str_new2(*code));
+    VALUE array = rb_funcall(rb_cRipper, rb_sexp_raw, 1, rb_str_new2(*code));
+
+    if (array == Qnil) {
+      Local<String> error = String::NewFromUtf8(
+        isolate, "Invalid Ruby code"
+      );
+      isolate->ThrowException(Exception::TypeError(error));
+      return;
+    }
 
     args.GetReturnValue().Set(objectToTree(isolate, array));
   }
@@ -138,7 +146,7 @@ namespace ripperjs {
 
     rb_require("ripper");
     rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
-    rb_sexp = rb_intern("sexp");
+    rb_sexp_raw = rb_intern("sexp_raw");
 
     NODE_SET_METHOD(exports, "sexp", Sexp);
   }
