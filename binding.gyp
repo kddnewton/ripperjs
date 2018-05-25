@@ -3,6 +3,7 @@
     {
       "target_name": "ripperjs",
       "sources": ["src/ripperjs.cc"],
+      "defines": ["RIPPERJS_RUBY_PATH=$(PWD)"],
       "include_dirs": [
         "<!(ruby -e \"puts RbConfig::CONFIG['rubyhdrdir']\")",
         "<!(ruby -e \"puts RbConfig::CONFIG['rubyarchhdrdir']\")"

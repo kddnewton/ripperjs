@@ -2,7 +2,7 @@
   "name": "ripperjs",
   "version": "0.2.1",
   "description": "A wrapper for the ripper Ruby library",
-  "main": "build/Release/ripperjs",
+  "main": "src",
   "scripts": {
     "build": "node-gyp rebuild",
     "clean": "node-gyp clean",

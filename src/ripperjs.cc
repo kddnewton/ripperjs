@@ -69,6 +69,27 @@ namespace ripperjs {
     );
   }
 
+  void setup(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+
+    if (args.Length() != 1) {
+      return throwException(isolate, "Wrong number of arguments");
+    }
+
+    if (!args[0]->IsString()) {
+      return throwException(isolate, "Filepath must be a string");
+    }
+
+    ruby_init();
+    ruby_init_loadpath();
+
+    String::Utf8Value filepath(isolate, args[0]->ToString());
+    rb_require(*filepath);
+
+    rb_cRipperJS = rb_const_get(rb_cObject, rb_intern("RipperJS"));
+    rb_sexp = rb_intern("sexp");
+  }
+
   void sexp(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
@@ -91,16 +112,7 @@ namespace ripperjs {
   }
 
   void init(Local<Object> exports) {
-    ruby_init();
-    ruby_init_loadpath();
-
-    char *filename = realpath("./src/ripperjs.rb", NULL);
-    printf("requiring: %s\n", filename);
-    rb_require(filename);
-
-    rb_cRipperJS = rb_const_get(rb_cObject, rb_intern("RipperJS"));
-    rb_sexp = rb_intern("sexp");
-
+    NODE_SET_METHOD(exports, "setup", setup);
     NODE_SET_METHOD(exports, "sexp", sexp);
   }
 
