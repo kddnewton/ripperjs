@@ -1,6 +1,6 @@
 {
   "name": "ripperjs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A wrapper for the ripper Ruby library",
   "main": "build/Release/ripperjs",
   "scripts": {
