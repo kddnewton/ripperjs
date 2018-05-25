@@ -15,140 +15,92 @@ namespace ripperjs {
   using v8::String;
   using v8::Value;
 
-  VALUE rb_cRipper;
-  ID rb_sexp_raw;
+  VALUE rb_cRipperJS;
+  ID rb_sexp;
 
-  Local<Value> objectToTree(Isolate *isolate, VALUE object);
-
-  Local<Array> arrayToArray(Isolate *isolate, VALUE array, long offset = 0) {
-    long size = RARRAY_LEN(array);
-    Local<Array> node = Array::New(isolate, size - offset);
-
-    long idx;
-    for (idx = offset; idx < size; idx++) {
-      node->Set(idx - offset, objectToTree(isolate, rb_ary_entry(array, idx)));
-    }
-
-    return node;
-  }
-
-  Local<Object> arrayToObject(Isolate *isolate, VALUE array) {
-    Local<Object> base = Object::New(isolate);
-
-    base->Set(
-      String::NewFromUtf8(isolate, "type"),
-      String::NewFromUtf8(isolate, rb_id2name(SYM2ID(rb_ary_entry(array, 0))))
-    );
-
-    return base;
-  }
-
-  Local<Object> arrayToLiteral(Isolate *isolate, VALUE array) {
-    Local<Object> literal = arrayToObject(isolate, array);
-    VALUE location = rb_ary_entry(array, 2);
-
-    literal->Set(
-      String::NewFromUtf8(isolate, "body"),
-      objectToTree(isolate, rb_ary_entry(array, 1))
-    );
-
-    literal->Set(
-      String::NewFromUtf8(isolate, "lineno"),
-      Integer::New(isolate, FIX2LONG(rb_ary_entry(location, 0)))
-    );
-
-    literal->Set(
-      String::NewFromUtf8(isolate, "colno"),
-      Integer::New(isolate, FIX2LONG(rb_ary_entry(location, 1)))
-    );
-
-    return literal;
-  }
-
-  Local<Object> arrayToNode(Isolate *isolate, VALUE array) {
-    Local<Object> node = arrayToObject(isolate, array);
-
-    node->Set(
-      String::NewFromUtf8(isolate, "body"),
-      arrayToArray(isolate, array, 1)
-    );
-
-    return node;
-  }
-
-  Local<Value> objectToTree(Isolate *isolate, VALUE object) {
-    switch (TYPE(object)) {
+  Local<Value> translate(Isolate *isolate, VALUE value) {
+    switch (TYPE(value)) {
       case T_SYMBOL:
-        return String::NewFromUtf8(isolate, rb_id2name(SYM2ID(object)));
+        return String::NewFromUtf8(isolate, rb_id2name(SYM2ID(value)));
       case T_FALSE:
         return False(isolate);
       case T_NIL:
         return Null(isolate);
       case T_FIXNUM:
-        return Integer::New(isolate, FIX2LONG(object));
+        return Integer::New(isolate, FIX2LONG(value));
       case T_STRING:
-        return String::NewFromUtf8(isolate, StringValueCStr(object));
-      case T_ARRAY:
-        if (RARRAY_LEN(object) == 0) {
-          return Array::New(isolate, 0);
+        return String::NewFromUtf8(isolate, StringValueCStr(value));
+      case T_ARRAY: {
+        long size = RARRAY_LEN(value);
+        Local<Array> array = Array::New(isolate, size);
+
+        long idx;
+        for (idx = 0; idx < size; idx++) {
+          array->Set(idx, translate(isolate, rb_ary_entry(value, idx)));
         }
 
-        VALUE name = rb_ary_entry(object, 0);
+        return array;
+      }
+      case T_HASH: {
+        Local<Object> object = Object::New(isolate);
 
-        switch (TYPE(name)) {
-          case T_SYMBOL:
-            if (rb_id2name(SYM2ID(name))[0] == '@') {
-              return arrayToLiteral(isolate, object);
-            }
-            return arrayToNode(isolate, object);
-          case T_ARRAY:
-            return arrayToArray(isolate, object);
+        VALUE keys = rb_funcall(value, rb_intern("keys"), 0);
+        VALUE key;
+
+        long idx;
+        long size = RARRAY_LEN(keys);
+
+        for (idx = 0; idx < size; idx++) {
+          key = rb_ary_entry(keys, idx);
+          object->Set(
+            translate(isolate, key),
+            translate(isolate, rb_hash_aref(value, key))
+          );
         }
+
+        return object;
+      }
     }
   }
 
-  void Sexp(const FunctionCallbackInfo<Value>& args) {
+  void throwException(Isolate *isolate, const char *message) {
+    isolate->ThrowException(
+      Exception::TypeError(String::NewFromUtf8(isolate, message))
+    );
+  }
+
+  void sexp(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
     if (args.Length() != 1) {
-      Local<String> error = String::NewFromUtf8(
-        isolate, "Wrong number of arguments"
-      );
-      isolate->ThrowException(Exception::TypeError(error));
-      return;
+      return throwException(isolate, "Wrong number of arguments");
     }
 
     if (!args[0]->IsString()) {
-      Local<String> error = String::NewFromUtf8(
-        isolate, "Code must be a string"
-      );
-      isolate->ThrowException(Exception::TypeError(error));
-      return;
+      return throwException(isolate, "Code must be a string");
     }
 
     String::Utf8Value code(isolate, args[0]->ToString());
-    VALUE array = rb_funcall(rb_cRipper, rb_sexp_raw, 1, rb_str_new2(*code));
+    VALUE root = rb_funcall(rb_cRipperJS, rb_sexp, 1, rb_str_new2(*code));
 
-    if (array == Qnil) {
-      Local<String> error = String::NewFromUtf8(
-        isolate, "Invalid Ruby code"
-      );
-      isolate->ThrowException(Exception::TypeError(error));
-      return;
+    if (root == Qnil) {
+      return throwException(isolate, "Invalid Ruby code");
     }
 
-    args.GetReturnValue().Set(objectToTree(isolate, array));
+    args.GetReturnValue().Set(translate(isolate, root));
   }
 
   void init(Local<Object> exports) {
     ruby_init();
     ruby_init_loadpath();
 
-    rb_require("ripper");
-    rb_cRipper = rb_const_get(rb_cObject, rb_intern("Ripper"));
-    rb_sexp_raw = rb_intern("sexp_raw");
+    char *filename = realpath("./src/ripperjs.rb", NULL);
+    rb_require(filename);
 
-    NODE_SET_METHOD(exports, "sexp", Sexp);
+    rb_cRipperJS = rb_const_get(rb_cObject, rb_intern("RipperJS"));
+    rb_sexp = rb_intern("sexp");
+
+    NODE_SET_METHOD(exports, "sexp", sexp);
   }
 
   NODE_MODULE(NODE_GYP_MODULE_NAME, init)
