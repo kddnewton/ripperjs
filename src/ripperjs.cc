@@ -95,6 +95,7 @@ namespace ripperjs {
     ruby_init_loadpath();
 
     char *filename = realpath("./src/ripperjs.rb", NULL);
+    printf("requiring: %s\n", filename);
     rb_require(filename);
 
     rb_cRipperJS = rb_const_get(rb_cObject, rb_intern("RipperJS"));
