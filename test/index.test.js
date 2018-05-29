@@ -8,3 +8,8 @@ test("converts to s-expressions", () => {
 test("throws an error when parsing invalid Ruby code", () => {
   expect(() => sexp("<>")).toThrow("Invalid");
 });
+
+test("attachs comments", () => {
+  const result = sexp("a\n# comment\nb");
+  expect(result.body[0].body[0].comment).not.toBe(null);
+});

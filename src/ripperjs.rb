@@ -1,17 +1,11 @@
 require 'ripper'
 
 class RipperJS < Ripper::SexpBuilder
-  attr_reader :comments
-
   def initialize(*args)
     super
-    @comments = []
-  end
 
-  def parse
-    super.tap do |result|
-      return if error?
-    end
+    @comment = nil
+    @current = nil
   end
 
   def self.sexp(src, filename = '-', lineno = 1)
@@ -22,8 +16,13 @@ class RipperJS < Ripper::SexpBuilder
 
   SCANNER_EVENTS.each do |event|
     module_eval(<<-End, __FILE__, __LINE__ + 1)
-      def on_#{event}(tok)
-        { type: :@#{event}, body: tok, lineno: lineno, column: column, comment: nil }
+      def on_#{event}(token)
+        {
+          type: :@#{event},
+          body: token,
+          lineno: lineno,
+          column: column
+        }
       end
     End
   end
@@ -32,24 +31,43 @@ class RipperJS < Ripper::SexpBuilder
   (PARSER_EVENTS - events).each do |event|
     module_eval(<<-End, __FILE__, __LINE__ + 1)
       def on_#{event}(*args)
-        { type: :#{event}, body: args, lineno: lineno, column: column, comment: nil }
+        build_sexp(:#{event}, args)
       end
     End
   end
 
+  def build_sexp(type, body)
+    {
+      type: type,
+      body: body,
+      lineno: lineno,
+      column: column
+    }.tap do |sexp|
+      sexp[:comment] = @comment || nil
+      @comment = nil
+      @current = sexp
+    end
+  end
+
   def on_comment(comment)
-    @comments << { type: :comment, body: comment, lineno: lineno, column: column }
+    sexp = { type: :comment, body: comment, lineno: lineno, column: column }
+
+    if @current
+      @current[:comment] = sexp
+    else
+      @comment = sexp
+    end
   end
 
   def on_embdoc_beg(comment)
-    @comments << { type: :embdoc, body: comment, lineno: lineno, column: column }
+    @last_node[:comment] = { type: :embdoc, body: comment, lineno: lineno, column: column }
   end
 
   def on_embdoc(comment)
-    @comments.last[:body] << comment
+    @last_node[:comment][:body] << comment
   end
 
   def on_embdoc_end(comment)
-    @comments.last[:body] << comment
+    @last_node[:comment][:body] << comment
   end
 end
