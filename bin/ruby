@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+which rvm &>/dev/null && rvm default do ruby "$@" || ruby "$@"
