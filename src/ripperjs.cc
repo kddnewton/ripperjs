@@ -15,6 +15,7 @@ namespace ripperjs {
   using v8::String;
   using v8::Value;
 
+  static bool initialized;
   VALUE rb_cRipperJS;
   ID rb_sexp;
 
@@ -111,9 +112,12 @@ namespace ripperjs {
   }
 
   void init(Local<Object> exports) {
-    RUBY_INIT_STACK;
-    ruby_init();
-    ruby_init_loadpath();
+    if (!initialized) {
+      RUBY_INIT_STACK;
+      ruby_init();
+      ruby_init_loadpath();
+      initialized = true;
+    }
 
     NODE_SET_METHOD(exports, "setup", setup);
     NODE_SET_METHOD(exports, "sexp", sexp);
