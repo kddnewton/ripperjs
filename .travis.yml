@@ -4,9 +4,7 @@ node_js:
 branches:
   only: master
 before_install:
-  - ruby --version
-  - rvm install 2.5.1
-  - ruby --version
+- ruby -e "require 'pp'; pp RbConfig::CONFIG.values_at('rubyhdrdir', 'rubyarchhdrdir', 'libdir', 'LIBRUBY', 'LIBS')"
 script:
 - yarn test
 cache: yarn
