@@ -1,5 +1,7 @@
 # ripperjs
 
+[![Build Status](https://travis-ci.org/kddeisz/ripperjs.svg?branch=master)](https://travis-ci.org/kddeisz/ripperjs)
+
 A wrapper for the ripper Ruby library.
 
 ## Getting started
