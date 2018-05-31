@@ -60,6 +60,8 @@ namespace ripperjs {
 
         return object;
       }
+      default:
+        return NULL;
     }
   }
 
