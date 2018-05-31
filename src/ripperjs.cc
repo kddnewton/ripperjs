@@ -82,14 +82,7 @@ namespace ripperjs {
       return throwException(isolate, "Filepath must be a string");
     }
 
-    printf("ABOUT TO CALL ruby_init()\n");
-    ruby_init();
-
-    printf("ABOUT TO CALL ruby_init_loadpath()\n");
-    ruby_init_loadpath();
-
     String::Utf8Value filepath(isolate, args[0]->ToString());
-    printf("ABOUT TO CALL rb_require(%s)\n", *filepath);
     rb_require(*filepath);
 
     rb_cRipperJS = rb_const_get(rb_cObject, rb_intern("RipperJS"));
@@ -118,6 +111,10 @@ namespace ripperjs {
   }
 
   void init(Local<Object> exports) {
+    RUBY_INIT_STACK;
+    ruby_init();
+    ruby_init_loadpath();
+
     NODE_SET_METHOD(exports, "setup", setup);
     NODE_SET_METHOD(exports, "sexp", sexp);
   }
