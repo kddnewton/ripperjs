@@ -5,6 +5,8 @@ branches:
   only: master
 before_install:
 - bin/debug
+after_install:
+- $(npm bin)/node-gyp rebuild --verbose
 script:
 - yarn test
 cache: yarn
