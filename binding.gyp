@@ -4,13 +4,13 @@
       "target_name": "ripperjs",
       "sources": ["src/ripperjs.cc"],
       "include_dirs": [
-        "<!(ruby -e \"puts RbConfig::CONFIG['rubyhdrdir']\")",
-        "<!(ruby -e \"puts RbConfig::CONFIG['rubyarchhdrdir']\")"
+        "<!(sh -lc \"ruby -e \\\"puts RbConfig::CONFIG['rubyhdrdir']\\\"\")",
+        "<!(sh -lc \"ruby -e \\\"puts RbConfig::CONFIG['rubyarchhdrdir']\\\"\")"
       ],
       "link_settings": {
         "libraries": [
-          "<!(ruby -e \"puts RbConfig::CONFIG.values_at('libdir', 'LIBRUBY').join('/')\")",
-          "<!(ruby -e \"puts RbConfig::CONFIG['LIBS']\")"
+          "<!(sh -lc \"ruby -e \\\"puts RbConfig::CONFIG.values_at('libdir', 'LIBRUBY').join('/')\\\"\")",
+          "<!(sh -lc \"ruby -e \\\"puts RbConfig::CONFIG['LIBS']\\\"\")"
         ]
       }
     }
