@@ -3,10 +3,6 @@ node_js:
 - stable
 branches:
   only: master
-before_install:
-- bin/debug
-before_script:
-- $(npm bin)/node-gyp rebuild --verbose
 script:
-- yarn test
+- LD_LIBRARY_PATH=$(ruby -e "puts RbConfig::CONFIG['libdir']"):$LD_LIBRARY_PATH yarn test
 cache: yarn
