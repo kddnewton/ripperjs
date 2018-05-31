@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'pp'
+
+def debug_dir(dir)
+  puts "\n\n=== #{dir} ==="
+  pp Dir["#{dir}/**/*"]
+end
+
+pp RbConfig::CONFIG.values_at('rubyhdrdir', 'rubyarchhdrdir', 'libdir', 'LIBRUBY', 'LIBS')
+
+debug_dir(RbConfig::CONFIG['rubyhdrdir'])
+debug_dir(RbConfig::CONFIG['rubyarchhdrdir'])

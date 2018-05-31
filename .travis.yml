@@ -4,7 +4,7 @@ node_js:
 branches:
   only: master
 before_install:
-- ruby -e "require 'pp'; pp RbConfig::CONFIG.values_at('rubyhdrdir', 'rubyarchhdrdir', 'libdir', 'LIBRUBY', 'LIBS')"
+- bin/debug
 script:
 - yarn test
 cache: yarn
