@@ -11,3 +11,4 @@ pp RbConfig::CONFIG.values_at('rubyhdrdir', 'rubyarchhdrdir', 'libdir', 'LIBRUBY
 
 debug_dir(RbConfig::CONFIG['rubyhdrdir'])
 debug_dir(RbConfig::CONFIG['rubyarchhdrdir'])
+debug_dir(RbConfig::CONFIG['libdir'])
