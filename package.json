@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/kddeisz/ripperjs#readme",
   "devDependencies": {
-    "jest": "^23.4.2",
+    "jest": "^24.0.0",
     "node-gyp": "^3.6.2"
   }
 }
